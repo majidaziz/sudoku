@@ -1,10 +1,20 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <pthread.h>
+#include <cstdlib>
 using namespace std;
 
 #define WIDTH 9
 #define HEIGHT 9
+
+struct thread_data
+{
+    int row;
+    int col;
+    bool rowOn;
+    bool colOn;
+};
 
 /* 9x9 grid of sudoku input */
 char grid[HEIGHT][WIDTH];
@@ -14,7 +24,7 @@ void createGrid(char** argv);
 /* Error Checks if duplicate value in either same row or column, depending on argument values */
 void sameLineValidation(int row, int col, int y, int x);
 /* Error Checks sub grid to contain one of each value ranging from [1,9]  */
-void subGridValidation(int row, int col);
+void *subGridValidation(void *arguments);
 
 int main(int argc, char** argv)
 {
@@ -48,8 +58,10 @@ void createGrid(char** argv)
     }
 }
 
-void sameLineValidation(int row, int col, int y, int x)
+void *sameLineValidation(void *arguments)
 {
+    struct thread_data *args;
+    args = (struct thread_data *) arguments;
     char c;
     int one=0,
         two=0,
@@ -62,11 +74,11 @@ void sameLineValidation(int row, int col, int y, int x)
         nine=0;
     for(int i=0; i<HEIGHT;++i)
     {
-        c = grid[y][x];
-        if(row == 1)
-            x++;
-        else if(col == 1)
-            y++;
+        c = grid[args->row][args->col];
+        if(args->rowOn)
+            args->col++;
+        else if(args->colOn)
+            args->row++;
         if(c == '1')
             one++;
         else if(c == '2')
@@ -135,17 +147,16 @@ void sameLineValidation(int row, int col, int y, int x)
     }
     if(errorCounter > 0)
     {
-        if(row == 1)
-            errorMessage += "on row " + y;
-        else if(col == 1)
-            errorMessage += "on column " + x;
+        if(args->rowOn)
+            errorMessage += "on row " + args->row;
+        else if(args->colOn)
+            errorMessage += "on column " + args->col;
     }
-    //WARNING: UNFINISHED FUNCTION, WAITING ON CREATION AND BEHAVIOR OF THREADS
  }
 
-void subGridValidation(int row, int col)
+void *subGridValidation(void *arguments)
 {
-    int errorCounter = 0;
+/*    int errorCounter = 0;
     string errorMessage = "";
     int one=0,
         two=0,
@@ -245,5 +256,5 @@ void subGridValidation(int row, int col)
         string sev = third + fourth;
         string ayy = sev + fifth;
         string last = ayy + sixth;
-    }
+    }*/
 }
