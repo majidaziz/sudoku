@@ -25,24 +25,34 @@ void createGrid(char** argv);
 void *sameLineValidation(void *arguments);
 /* Error Checks sub grid to contain one of each value ranging from [1,9]  */
 void *subGridValidation(void *arguments);
+void *testPthread(void *arguments);
 
-int main(int argc, char** argv)
+int main(int argc, char* argv[])
 {
-    struct thread_data *args;
+    createGrid(&argv[1]);
     pthread_t threads[HEIGHT];
+    struct thread_data args[HEIGHT];
     int rc;
-
-    createGrid( &argv[1]);
     for(int i=0; i<HEIGHT; ++i)
     {
-        rc = pthread_create(&threads[i], NULL, sameLineValidation, (void *)args);
+        args[i].row = i;
+        args[i].col = i;
+        rc = pthread_create(&threads[i], NULL, sameLineValidation, (void *) &args[i]); 
         if(rc)
         {
-            cout << "Unable to create thread, fix yo shit." << endl;
+            cout << "Uh oh " << rc << endl;
             exit(-1);
         }
-    }
+ 
+    }  
     return 0;
+}
+
+void *testPthread(void *arguments)
+{
+    struct thread_data *args;
+    args = (struct thread_data *)arguments;
+    args->row = 5;
 }
 
 void createGrid(char** argv)
@@ -172,8 +182,6 @@ void *subGridValidation(void *arguments)
 
     struct thread_data *args;
     args = (struct thread_data *)arguments;
-    int errorCounter = 0;
-
     int errorCounter = 0;
     string errorMessage = "";
     int one=0,
