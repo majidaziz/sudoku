@@ -1,4 +1,5 @@
-#include <string>
+#include <stdio.h>
+#include <string.h>
 #include <iostream>
 #include <fstream>
 #include <pthread.h>
@@ -12,76 +13,109 @@ struct thread_data
 {
     int row;
     int col;
-    bool rowOn;
-    bool colOn;
+    bool row_on;
+    bool col_on;
 };
 
 /* 9x9 grid of sudoku input */
 char grid[HEIGHT][WIDTH];
-
 /* Creates sudoku grid */
-void createGrid(char** argv);
+void create_grid(char* argv);
 /* Error Checks if duplicate value in either same row or column, depending on argument values */
-void *sameLineValidation(void *arguments);
+void *same_line_validation(void *arguments);
 /* Error Checks sub grid to contain one of each value ranging from [1,9]  */
-void *subGridValidation(void *arguments);
-void *testPthread(void *arguments);
+void *sub_grid_validation(void *arguments);
+
+string err_msg = "";
 
 int main(int argc, char* argv[])
 {
-    createGrid(&argv[1]);
+    create_grid(argv[1]);
     pthread_t threads[HEIGHT];
     struct thread_data args[HEIGHT];
     int rc;
-    for(int i=0; i<HEIGHT; ++i)
+	int i;
+	for(i=0; i<HEIGHT; ++i)
     {
         args[i].row = i;
-        args[i].col = i;
-        rc = pthread_create(&threads[i], NULL, sameLineValidation, (void *) &args[i]); 
+        args[i].col = 0;
+		args[i].row_on = true;
+		args[i].col_on = false;
+        rc = pthread_create(&threads[i], NULL, same_line_validation, (void *) &args); 
         if(rc)
         {
             cout << "Uh oh " << rc << endl;
             exit(-1);
         }
- 
-    }  
+    }
+	pthread_join(threads[8], NULL);
+	for(i=0; i<HEIGHT; ++i)
+    {
+        args[i].row = 0;
+        args[i].col = i;
+		args[i].row_on = false;
+		args[i].col_on = true;
+        rc = pthread_create(&threads[0], NULL, same_line_validation, (void *) &args); 
+        if(rc)
+        {
+            cout << "RIP " << rc << endl;
+            exit(-1);
+        }
+	}
+	pthread_join(threads[8], NULL);
+	int cnt0 = 0;
+	int cnt1 = 0;
+	for(i=0; i<HEIGHT; ++i)
+	{
+		args[i].row = (3*cnt0);
+		args[i].col = (3*cnt1);
+		rc = pthread_create(&threads[i], NULL, sub_grid_validation, (void *) &args[i]);
+		if(rc)
+		{
+			cout << "Your machine appears to be alergic to multi threads :( " << rc << endl;
+			exit(-1);
+		}
+		cnt1++;
+		if(args[i].col == 6)
+		{
+			cnt1 = 0;
+			cnt0++;
+		}
+	}
+	pthread_join(threads[8], NULL);
     return 0;
 }
 
-void *testPthread(void *arguments)
+void create_grid(char *argv)
 {
-    struct thread_data *args;
-    args = (struct thread_data *)arguments;
-    args->row = 5;
-}
-
-void createGrid(char** argv)
-{
-    int rowCount = 0;
-    int colCount = 0;
+	int row_c=0;
     string line;
-    ifstream myfile(argv[1]);
-    if(myfile.is_open())
-    {
-        while(getline(myfile,line))
-        {
-            for(int i=0; i<line.size();++i)
-            {
-                /* input known that commas separate correct values, so we disregard comma input */
-                if(line[i] != ',')
-                {
-                    grid[rowCount][colCount] = line[i];
-                    colCount++;
-                }
-            }
-            colCount = 0;
-            rowCount++;
-            myfile.close();
-        }
-    }
+	string other;
+	ifstream file(argv);
+	if(file.is_open())
+	{
+		while(getline(file,line))
+		{	
+			for(int i=0; i<line.size(); ++i)
+			{
+				cout << line.size();
+			}
+			cout << endl;
+		}
+	}
+	/*
+	for(int i=0; i<HEIGHT; ++i)
+	{
+		for(int j=0; i<HEIGHT; ++i)
+		{
+			cout << grid[i][j];
+		}
+		cout << endl;
+	}
+	*/
 }
 
-void *sameLineValidation(void *arguments)
+void *same_line_validation(void *arguments)
 {
     struct thread_data *args;
     args = (struct thread_data *) arguments;
@@ -98,9 +132,9 @@ void *sameLineValidation(void *arguments)
     for(int i=0; i<HEIGHT;++i)
     {
         c = grid[args->row][args->col];
-        if(args->rowOn)
+        if(args->row_on)
             args->col++;
-        else if(args->colOn)
+        else if(args->col_on)
             args->row++;
         if(c == '1')
             one++;
@@ -121,69 +155,75 @@ void *sameLineValidation(void *arguments)
         else if(c == '9')
             nine++;
     }
-    int errorCounter = 0;
-    string errorMessage = "";
+    int error_counter = 0;
+    string error_message = "";
     if(one>=2)
     {
-        errorMessage += one + " one's, ";
-        errorCounter++;
+        error_message += one + " one's, ";
+        error_counter++;
     }
     if(two>=2)
     {
-        errorMessage += two + " two's, ";
-        errorCounter++;
+        error_message += two + " two's, ";
+        error_counter++;
     }
     if(three>=2)
     {
-        errorMessage += three + " three's, ";
-        errorCounter++;
+        error_message += three + " three's, ";
+        error_counter++;
     }
     if(four>=2)
     {
-        errorMessage += four + " four's, ";
-        errorCounter++;
+        error_message += four + " four's, ";
+        error_counter++;
     }
     if(five>=2)
     {
-        errorMessage += five + " five's, ";
-        errorCounter++;
+        error_message += five + " five's, ";
+        error_counter++;
     }
     if(six>=2)
     {
-        errorMessage += six + " six's, ";
-        errorCounter++;
+        error_message += six + " six's, ";
+        error_counter++;
     }
     if(seven>=2)
     {
-        errorMessage += seven + " seven's, ";
-        errorCounter++;
+        error_message += seven + " seven's, ";
+        error_counter++;
     }
     if(eight>=2)
     {
-        errorMessage += eight + " eight's, ";
-        errorCounter++;
+        error_message += eight + " eight's, ";
+        error_counter++;
     }
     if(nine>=2)
     {
-        errorMessage += nine + " nine's, ";
-        errorCounter++;
+        error_message += nine + " nine's, ";
+        error_counter++;
     }
-    if(errorCounter > 0)
+    if(error_counter > 0)
     {
-        if(args->rowOn)
-            errorMessage += "on row " + args->row;
-        else if(args->colOn)
-            errorMessage += "on column " + args->col;
+        if(args->row_on)
+        {
+            error_message += "on row " + args->row;
+        }   
+        else if(args->col_on)
+        {
+            error_message += "on column " + args->col;
+        }
+		err_msg += (error_message + "\n");
     }
+	//cout << "error message: " << err_msg << endl;
  }
 
-void *subGridValidation(void *arguments)
+void *sub_grid_validation(void *arguments)
 {
 
     struct thread_data *args;
     args = (struct thread_data *)arguments;
-    int errorCounter = 0;
-    string errorMessage = "";
+    int error_counter = 0;
+    string error_message = "";
     int one=0,
         two=0,
         three=0,
@@ -227,60 +267,63 @@ void *subGridValidation(void *arguments)
     }
     if(one>1)
     {
-        errorCounter++;
-        errorMessage += one + " one's, ";
+        error_counter++;
+        error_message += one + " one's, ";
     }
     if(two>1)
     {
-        errorCounter++;
-        errorMessage += two + " two's, ";
+        error_counter++;
+        error_message += two + " two's, ";
     }
     if(three>1)
     {
-         errorCounter++;
-         errorMessage += three + " three's, ";
+        error_counter++;
+        error_message += three + " three's, ";
     }
     if(four>1)
     {
-        errorCounter++;
-        errorMessage += four + " four's, ";
+		error_counter++;
+		error_message += four + " four's, ";
 
     }
     if(five>1)
     {
-        errorCounter++;
-        errorMessage += five + " five's, ";
+        error_counter++;
+        error_message += five + " five's, ";
     }
     if(six>1)
     {
-        errorCounter++;
-        errorMessage += six + " six's, ";
+        error_counter++;
+        error_message += six + " six's, ";
     }
     if(seven>1)
     {
-        errorCounter++;
-        errorMessage += seven + " seven's, ";
+        error_counter++;
+        error_message += seven + " seven's, ";
     }
     if(eight>1)
     {
-        errorCounter++;
-        errorMessage += eight + " eight's, ";
+        error_counter++;
+        error_message += eight + " eight's, ";
     }
     if(nine>1)
     {
-        errorCounter++;
-        errorMessage += nine + " nine's, ";
+		error_counter++;
+		error_message += nine + " nine's, ";
     }
-    if(errorCounter > 0)
+	string last;
+    if(error_counter > 0)
     {
-        string first = "on sub grid row[" + (args->row + 1);
+		// Initially these below were chars but I'm lazy so I just switch to string.
+		string first = "on sub grid row [" + (args->row + 1);
         string second = "," + (args->row + 4);
         string third = first + second;
-        string fourth = " and column[" + (args->col + 1);
+        string fourth = " and column [" + (args->col + 1);
         string fifth = "," + (args->col + 4);
         string sixth = "].";
         string sev = third + fourth;
         string ayy = sev + fifth;
         string last = ayy + sixth;
-    }
+		err_msg += (error_message + last);
+	}
 }
