@@ -35,6 +35,15 @@ int main(int argc, char* argv[])
     struct thread_data args[HEIGHT];
     int rc;
 	int i;
+    int j;
+    for(i=0;i<9;++i)
+    {
+        for(j=0;j<9;++j)
+        {
+            cout << grid[i][j];
+        }
+        cout << endl;
+    }
 	for(i=0; i<HEIGHT; ++i)
     {
         args[i].row = i;
@@ -88,31 +97,27 @@ int main(int argc, char* argv[])
 
 void create_grid(char *argv)
 {
-	int row_c=0;
+    ifstream myfile;
+    myfile.open(argv);
     string line;
-	string other;
-	ifstream file(argv);
-	if(file.is_open())
-	{
-		while(getline(file,line))
-		{	
-			for(int i=0; i<line.size(); ++i)
-			{
-				cout << line.size();
-			}
-			cout << endl;
-		}
-	}
-	/*
-	for(int i=0; i<HEIGHT; ++i)
-	{
-		for(int j=0; i<HEIGHT; ++i)
-		{
-			cout << grid[i][j];
-		}
-		cout << endl;
-	}
-	*/
+    int row_c = 0;
+    int col_c = 0;
+    if(myfile.is_open())
+    {
+        while(getline(myfile,line))
+        {
+            for(int i=0; i<line.size(); ++i)
+            {
+                if(line[i] != ',')
+                {
+                    grid[row_c][col_c] = line[i];
+                    col_c++;
+                }
+            }
+            row_c++;
+            col_c = 0;
+        }
+    }
 }
 
 void *same_line_validation(void *arguments)
