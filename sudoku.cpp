@@ -42,14 +42,14 @@ int main(int argc, char* argv[])
     pthread_t threads[HEIGHT];
     struct thread_data args[HEIGHT];
     int rc;
-	int i;
+    int i;
     // ROW CHECKING
-	for(i=0; i<HEIGHT; ++i)
+    for(i=0; i<HEIGHT; ++i)
     {
         args[i].row = i;
         args[i].col = 0;
-		args[i].row_on = true;
-		args[i].col_on = false;
+	args[i].row_on = true;
+	args[i].col_on = false;
         //cout << "row before _create: " << args[i].row << endl;
         rc = pthread_create(&threads[i], NULL, same_line_validation, (void *) &args); 
         //cout << "row after _create: " << args[i].row << endl;
@@ -62,39 +62,39 @@ int main(int argc, char* argv[])
     pthread_join(threads[8], NULL);
     // COLUMN CHECKING
     glb_cnt = 0;
-	for(i=0; i<HEIGHT; ++i)
+    for(i=0; i<HEIGHT; ++i)
     {
         args[i].row = 0;
         args[i].col = i;
-		args[i].row_on = false;
-		args[i].col_on = true;
+	args[i].row_on = false;
+	args[i].col_on = true;
         rc = pthread_create(&threads[0], NULL, same_line_validation, (void *) &args); 
         if(rc)
         {
             cout << "RIP " << rc << endl;
             exit(-1);
         }
-	}
-    pthread_join(threads[8], NULL);
+    }
+	pthread_join(threads[8], NULL);
 	int cnt0 = 0;
 	int cnt1 = 0;
-	for(i=0; i<HEIGHT; ++i)
-	{
-		args[i].row = (3*cnt0);
+    for(i=0; i<HEIGHT; ++i)
+    {
+	args[i].row = (3*cnt0);
         args[i].col = (3*cnt1);
         rc = pthread_create(&threads[i], NULL, sub_grid_validation, (void *) &args[i]);
-		if(rc)
-		{
-			cout << "Your machine appears to be alergic to multi threads :( " << rc << endl;
-			exit(-1);
-		}
-		cnt1++;
-		if(args[i].col == 6)
-		{
-			cnt1 = 0;
-			cnt0++;
-		}
+	if(rc)
+	{
+	    cout << "Your machine appears to be alergic to multi threads :( " << rc << endl;
+	    exit(-1);
 	}
+	cnt1++;
+	if(args[i].col == 6)
+	{
+	    cnt1 = 0;
+	    cnt0++;
+	}
+    }
     pthread_join(threads[8], NULL);
     return 0;
 }
@@ -273,7 +273,7 @@ void *sub_grid_validation(void *arguments)
         c = grid[args->row][args->col];
         if(counter == 2)
         {
-           args->col -= 3;
+            args->col -= 3;
             args->row++;
             counter = -1;
         }
