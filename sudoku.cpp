@@ -2,7 +2,7 @@
  * Author: Majid Aziz
  * Email: aziz112@mail.chapman.edu
  * DATE: 3/7/18
- * Program: Sudoku validation using 9 threads other than main.
+ * Program: Sudoku validation using 9 threads other than main. 
  * */
 #include <iostream>
 #include <fstream>
@@ -26,12 +26,14 @@ struct thread_data
 char grid[HEIGHT][WIDTH];
 /* just a global counter */
 int glb_cnt = 0;
-/* Creates sudoku grid */
+
+/* Creates sudoku grid (2d array) */
 void create_grid(char* argv);
 /* Error Checks if duplicate value in either same row or column, depending on argument values */
 void *same_line_validation(void *arguments);
 /* Error Checks sub grid to contain one of each value ranging from [1,9]  */
 void *sub_grid_validation(void *arguments);
+/* prints something..idk */
 void print_grid();
 
 int main(int argc, char* argv[])
@@ -75,9 +77,9 @@ int main(int argc, char* argv[])
             exit(-1);
         }
     }
-	pthread_join(threads[8], NULL);
-	int cnt0 = 0;
-	int cnt1 = 0;
+    pthread_join(threads[8], NULL);
+    int cnt0 = 0;
+    int cnt1 = 0;
     for(i=0; i<HEIGHT; ++i)
     {
 	args[i].row = (3*cnt0);
@@ -241,7 +243,7 @@ void *same_line_validation(void *arguments)
     {
         cout << endl;
     }
- }
+}
 
 void *sub_grid_validation(void *arguments)
 {
@@ -347,7 +349,7 @@ void *sub_grid_validation(void *arguments)
     {
        cout << "in sub grid rows [" << args->row - 2 << "," << args->row << "] "
             << "columns [" << args->col + 1 << "," << args->col + 3 << "]" << endl;
-	}
+    }
 }
 
 void print_grid()
