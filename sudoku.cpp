@@ -3,6 +3,7 @@
  * Email: aziz112@mail.chapman.edu
  * DATE: 3/7/18
  * Program: Sudoku validation using 9 threads other than main. 
+ * compile: g++ -pthread sudoku.cpp | running requires text file via terminal input
  * */
 #include <iostream>
 #include <fstream>
